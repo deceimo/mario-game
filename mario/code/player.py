@@ -6,7 +6,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         self.import_character_assets()
         self.frame_index = 0
-        self.animation_speed = 0.2
+        self.animation_speed = 0.15
         self.image = self.animations['idle'][self.frame_index]
         self.rect = self.image.get_rect(topleft = pos)
 
@@ -15,17 +15,39 @@ class Player(pygame.sprite.Sprite):
         self.speed = 9
         self.gravity = 0.8
         self.jump_speed = -16
+
+        #Player status
+        self.status = 'idle'
+        self.facing_right = True
+        self.on_ground = False
+        self.on_ceiling = False
+        self.on_left = False
+        self.on_right = False
     
     #Making the posture of player along the level
     def animate(self):
-        animation = self.animations['jump']
+        animation = self.animations[self.status]
 
         #loop the running frame
         self.frame_index += self.animation_speed
         if self.frame_index >= len(animation):
             self.frame_index = 0
         
-        self.image = animation[int(self.frame_index)]
+        image = animation[int(self.frame_index)]
+        if self.facing_right == True:
+            self.image = image
+        else:
+            flipped_image = pygame.transform.flip(image, True, False)
+            self.image = flipped_image
+        
+        #set rect
+        if self.on_ground:
+            self.rect = self.image.get_rect(midbottom = self.rect.midbottom)
+        elif self.on_ceiling:
+            self.rect = self.image.get_rect(midtop = self.rect.midtop)
+        else:
+            self.rect = self.image.get_rect(center = self.rect.center)
+
 
 
     #Import all player posture from png file
@@ -37,29 +59,43 @@ class Player(pygame.sprite.Sprite):
             full_path = character_path + animation
             self.animations[animation] = import_folder(full_path)
 
-    #Receive the input button of the player
+    #Receive the input button and set speed of the player
     def get_input(self):
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+        if keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_SPACE]:
+            if self.on_ground == True and self.on_ceiling == False:
+                self.direction.y = self.jump_speed
+        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             self.direction.x = 1
+            self.facing_right = True
         elif keys[pygame.K_LEFT] or keys[pygame.K_a]:
             self.direction.x = -1
-        elif keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_SPACE]:
-            self.jump()
+            self.facing_right = False
         else:
             self.direction.x = 0
+
+
+    #Check the posture of player
+    def get_status(self):
+        if self.direction.y < 0:    #jump
+            self.status = 'jump'
+        elif self.direction.y > 1:  #fall
+            self.status = 'fall'
+        elif self.direction.x == 0: #y=0 and x=0 is stand still
+            self.status = 'idle'
+        else:                       #y=0 but x!=0 is run
+            self.status = 'run'
 
     #Create the gravity speed
     def apply_gravity(self):
         self.direction.y += self.gravity
         self.rect.y += self.direction.y
 
-    #Set the jump speed
-    def jump(self):
-        self.direction.y = self.jump_speed
+
 
 
     def update(self):
         self.get_input()
         self.animate()
+        self.get_status()

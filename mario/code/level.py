@@ -10,6 +10,7 @@ class Level:
         self.display_surface = surface
         self.setup_level(level_data)
         self.world_shift = 0
+        self.current_x = 0
 
 
     #Method to place blocks and origin of the player
@@ -54,10 +55,12 @@ class Level:
 
         for sprite in self.tiles.sprites():
             if sprite.rect.colliderect(player.rect):
-                if player.direction.x < 0:
+                if player.direction.x < 0:      #left
                     player.rect.left = sprite.rect.right
-                elif player.direction.x > 0:
+                    player.on_left = True
+                elif player.direction.x > 0:    #right
                     player.rect.right = sprite.rect.left
+                    player.on_right = True
 
     #Move player vertically with collision detected
     def vertical_movement_collision(self):
@@ -66,11 +69,19 @@ class Level:
 
         for sprite in self.tiles.sprites():
             if sprite.rect.colliderect(player.rect):
-                if player.direction.y > 0:  #stand on the block
+                if player.direction.y > 0:      #down
                     player.rect.bottom = sprite.rect.top
-                elif player.direction.y < 0:
+                    player.on_ground = True
+                elif player.direction.y < 0:    #up
                     player.rect.top = sprite.rect.bottom
+                    player.on_ceiling = True
                 player.direction.y = 0
+        
+        if player.on_ground and (player.direction.y < 0 or player.direction.y > 1):
+            player.on_ground = False
+        
+        if player.on_ceiling and player.direction.y > 0:
+            player.on_ceiling = False
 
 
     def run(self):
