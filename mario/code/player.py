@@ -2,13 +2,19 @@ import pygame
 from support import import_folder
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos):
+    def __init__(self, pos, surface):
         super().__init__()
         self.import_character_assets()
         self.frame_index = 0
         self.animation_speed = 0.15
         self.image = self.animations['idle'][self.frame_index]
         self.rect = self.image.get_rect(topleft = pos)
+        
+        #dust particle
+        self.import_dust_run_particle()
+        self.dust_frame_index = 0
+        self.dust_animation_speed = 0.15
+        self.display_surface = surface
 
         #Player movement
         self.direction = pygame.math.Vector2(0,0)
@@ -39,15 +45,42 @@ class Player(pygame.sprite.Sprite):
         else:
             flipped_image = pygame.transform.flip(image, True, False)
             self.image = flipped_image
-        
-        #set rect
-        if self.on_ground:
-            self.rect = self.image.get_rect(midbottom = self.rect.midbottom)
-        elif self.on_ceiling:
-            self.rect = self.image.get_rect(midtop = self.rect.midtop)
-        else:
-            self.rect = self.image.get_rect(center = self.rect.center)
 
+
+
+            #set rect
+            '''
+        if self.on_ground and self.on_right:
+            self.rect = self.image.get_rect(bottomright = self.rect.bottomright)
+        elif self.on_ground and self.on_left:
+            self.rect = self.image.get_rect(bottomleft = self.rect.bottomleft)
+        elif self.on_ground:
+            self.rect = self.image.get_rect(midbottom = self.rect.midbottom)
+        elif self.on_ceiling and self.on_right:
+            self.rect = self.image.get_rect(topright = self.rect.topright)
+        elif self.on_ceiling and self.on_left:
+            self.rect = self.image.get_rect(topleft = self.rect.topleft)
+        elif self.on_ceiling:
+            self.rect = self.image.get_rect(midtop = self.rect.midtop)'''
+    
+    def import_dust_run_particle(self):
+        self.dust_run_particle = import_folder('../graphics/character/dust_particle/run')
+
+    def run_dust_animation(self):
+        if self.status == 'run' and self.on_ground:
+            self.dust_frame_index += self.dust_animation_speed
+            if self.dust_frame_index >= len(self.dust_run_particle):
+                self.dust_frame_index = 0
+            
+            dust_particle = self.dust_run_particle[int(self.dust_frame_index)]
+
+            if self.facing_right:
+                pos = self.rect.bottomleft - pygame.math.Vector2(0,10)
+                self.display_surface.blit(dust_particle, pos)
+            else:
+                reverse_dust_particle = pygame.transform.flip(dust_particle, True, False)
+                pos = self.rect.bottomleft - pygame.math.Vector2(-60,10)
+                self.display_surface.blit(reverse_dust_particle, pos)
 
 
     #Import all player posture from png file
@@ -64,7 +97,7 @@ class Player(pygame.sprite.Sprite):
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_SPACE]:
-            if self.on_ground == True and self.on_ceiling == False:
+            if self.on_ground == True:
                 self.direction.y = self.jump_speed
         elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             self.direction.x = 1
@@ -99,3 +132,4 @@ class Player(pygame.sprite.Sprite):
         self.get_input()
         self.animate()
         self.get_status()
+        self.run_dust_animation()

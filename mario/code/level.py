@@ -27,7 +27,7 @@ class Level:
                     tile = Tile((x,y),tile_size)
                     self.tiles.add(tile)
                 elif cell == 'P':
-                    player_Sprite = Player((x,y))
+                    player_Sprite = Player((x,y), self.display_surface)
                     self.player.add(player_Sprite)
 
 
@@ -58,9 +58,18 @@ class Level:
                 if player.direction.x < 0:      #left
                     player.rect.left = sprite.rect.right
                     player.on_left = True
+                    self.current_x = player.rect.left
                 elif player.direction.x > 0:    #right
                     player.rect.right = sprite.rect.left
                     player.on_right = True
+                    self.current_x = player.rect.right
+        
+        if player.on_left and (player.rect.left < self.current_x or player.direction.x >= 0):
+            player.on_left = False
+
+        if player.on_right and (player.rect.right > self.current_x or player.direction.x <= 0):
+            player.on_right = False
+                    
 
     #Move player vertically with collision detected
     def vertical_movement_collision(self):
@@ -69,7 +78,7 @@ class Level:
 
         for sprite in self.tiles.sprites():
             if sprite.rect.colliderect(player.rect):
-                if player.direction.y > 0:      #down
+                if player.direction.y > 1:      #down
                     player.rect.bottom = sprite.rect.top
                     player.on_ground = True
                 elif player.direction.y < 0:    #up

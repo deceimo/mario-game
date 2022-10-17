@@ -2,12 +2,12 @@ level_map = [
 '  P                                                    ',
 '                                                       ',
 '                                                       ',
-'  XX    XXX            XX                              ',
-'  XX                                                 XX',
+'        XXX            XX                              ',
+'                                                     XX',
 '  XXXX         XX           X                        XX',
 '  XXXX       XX                               XXX    XX',
 '  X     X  XXXX    XX  XX      X    X    X           XX',
-'        X  XXXX    XX  XXX     X    X    X           XX',
+'        X  XXXXX   XX  XXX     X    X    X           XX',
 '     XXXX  XXXXXX  XX  XXXX    X    X    X           XX',
 'XXXXXXXXX  XXXXXX  XX  XXXX    X    X    X           XX']
 
